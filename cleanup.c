@@ -10,3 +10,17 @@
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "philo.h"
+
+void	cleanup_simulation(t_data *data)
+{
+	int	i;
+
+	i = -1;
+	while (++i < data->num_philos)
+		pthread_mutex_destroy(&data->forks[i]);
+	pthread_mutex_destroy(&data->death_lock);
+	pthread_mutex_destroy(&data->print_lock);
+	free(data->forks);
+	free(data->philos);
+}
