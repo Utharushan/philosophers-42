@@ -19,6 +19,7 @@
 # include <stdlib.h>
 # include <unistd.h>
 # include <sys/time.h>
+# include <stdbool.h>
 
 // Struct Definitions (Ensure they are properly defined)
 typedef struct s_philo
@@ -56,11 +57,16 @@ void		cleanup_simulation(t_data *data);
 // Simulation
 void		*philosopher_routine(void *arg);
 void		start_simulation(t_data *data);
-void		*check_death(void *arg);
+void		*grim_reaper(void *arg);
 
 // Time & Utils
 long long	get_time_in_ms(void);
 void		ft_usleep(int time);
 void		print_action(t_philo *philo, char *msg);
+bool		has_simulation_stopped(t_data *data);
+bool		end_condition_reached(t_data *data);
+void		*lone_philo_routine(t_philo *philo);
+void		set_sim_stop_flag(t_data *data, bool state);
+void		think_routine(t_philo *philo, bool silent);
 
 #endif

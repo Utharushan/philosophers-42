@@ -14,26 +14,38 @@
 
 void	philo_eat(t_philo *philo)
 {
+	if (has_simulation_stopped(philo->data))
+		return	;
 	pthread_mutex_lock(philo->left_fork);
 	print_action(philo, "has taken a fork");
 	pthread_mutex_lock(philo->right_fork);
 	print_action(philo, "has taken a fork");
 	print_action(philo, "is eating");
+
 	pthread_mutex_lock(&philo->data->death_lock);
 	philo->last_meal_time = get_time_in_ms();
 	philo->eat_count++;
 	if (philo->eat_count == philo->data->max_meals)
 		philo->data->full_count++;
 	pthread_mutex_unlock(&philo->data->death_lock);
+
 	ft_usleep(philo->data->time_to_eat);
-	pthread_mutex_unlock(philo->left_fork);
-	pthread_mutex_unlock(philo->right_fork);
+	if (!has_simulation_stopped(philo->data))
+	{
+		pthread_mutex_unlock(philo->left_fork);
+		pthread_mutex_unlock(philo->right_fork);
+	}
 }
+
 
 void	philo_sleep_think(t_philo *philo)
 {
+	if (has_simulation_stopped(philo->data))
+		return	;
 	print_action(philo, "is sleeping");
 	ft_usleep(philo->data->time_to_sleep);
+	if (has_simulation_stopped(philo->data))
+		return;
 	print_action(philo, "is thinking");
 }
 
@@ -42,12 +54,16 @@ void	*philosopher_routine(void *arg)
 	t_philo	*philo;
 
 	philo = (t_philo *)arg;
-	while (1)
+	if (philo->data->num_philos == 1)
+		return (lone_philo_routine(philo));
+	if (philo->id % 2)
+		think_routine(philo, true);
+	while (!has_simulation_stopped(philo->data))
 	{
 		philo_eat(philo);
+		if (has_simulation_stopped(philo->data))
+			break;
 		philo_sleep_think(philo);
-		if (philo->data->full_count == philo->data->num_philos)
-			break ;
 	}
 	return (NULL);
 }
@@ -62,36 +78,27 @@ void	start_simulation(t_data *data)
 	while (++i < data->num_philos)
 		pthread_create(&data->philos[i].thread, NULL,
 			philosopher_routine, &data->philos[i]);
-	pthread_create(&monitor, NULL, check_death, (void *)data);
+
+	pthread_create(&monitor, NULL, grim_reaper, (void *)data);
 	pthread_join(monitor, NULL);
+
 	i = -1;
 	while (++i < data->num_philos)
 		pthread_join(data->philos[i].thread, NULL);
 }
 
-void	*check_death(void *arg) // Corrected return type
+void	*grim_reaper(void *arg)
 {
-	t_data		*data;
-	int			i;
-	long long	time;
+	t_data	*data;
 
 	data = (t_data *)arg;
+	if (data->max_meals == 0)
+		return (NULL);
+	set_sim_stop_flag(data, false);
 	while (1)
 	{
-		i = -1;
-		while (++i < data->num_philos)
-		{
-			pthread_mutex_lock(&data->death_lock);
-			time = get_time_in_ms() - data->philos[i].last_meal_time;
-			if (time >= data->time_to_die)
-			{
-				print_action(&data->philos[i], "died");
-				data->someone_died = 1;
-				pthread_mutex_unlock(&data->death_lock);
-				return (NULL);
-			}
-			pthread_mutex_unlock(&data->death_lock);
-		}
+		if (end_condition_reached(data))
+			return (NULL);
 		usleep(1000);
 	}
 	return (NULL);

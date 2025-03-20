@@ -27,7 +27,8 @@ SRCS		=	main.c \
 				simulation.c \
 				parsing.c \
 				utils.c \
-				cleanup.c
+				cleanup.c \
+				time_utils.c
 
 # === Object Files ===
 OBJS		= $(addprefix $(OBJDIR)/, $(SRCS:.c=.o))

@@ -5,36 +5,85 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: tuthayak <tuthayak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/19 11:57:11 by tuthayak          #+#    #+#             */
-/*   Updated: 2025/03/19 11:57:11 by tuthayak         ###   ########.fr       */
+/*   Created: 2025/03/20 22:49:43 by tuthayak          #+#    #+#             */
+/*   Updated: 2025/03/20 22:49:43 by tuthayak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-long long	get_time_in_ms(void)
+bool	has_simulation_stopped(t_data *data)
 {
-	struct timeval	tv;
+	bool	result;
 
-	gettimeofday(&tv, NULL);
-	return ((tv.tv_sec * 1000) + (tv.tv_usec / 1000));
+	result = false;
+	pthread_mutex_lock(&data->death_lock);
+	if (data->someone_died || (data->max_meals > 0 && data->full_count >= data->num_philos))
+		result = true;
+	pthread_mutex_unlock(&data->death_lock);
+	return (result);
 }
 
-void	ft_usleep(int time)
+bool	end_condition_reached(t_data *data)
 {
-	long long	start_time;
+	int			i;
+	long long	time;
 
-	start_time = get_time_in_ms();
-	while (get_time_in_ms() - start_time < time)
-		usleep(100);
+	i = -1;
+	while (++i < data->num_philos)
+	{
+		pthread_mutex_lock(&data->death_lock);
+		time = get_time_in_ms() - data->philos[i].last_meal_time;
+		if (time >= data->time_to_die)
+		{
+			print_action(&data->philos[i], "died");
+			data->someone_died = 1;
+			pthread_mutex_unlock(&data->death_lock);
+			return (true);
+		}
+		if (data->max_meals > 0 && data->full_count >= data->num_philos)
+		{
+			pthread_mutex_unlock(&data->death_lock);
+			return (true);
+		}
+		pthread_mutex_unlock(&data->death_lock);
+	}
+	return (false);
 }
 
-void	print_action(t_philo *philo, char *msg)
+void	*lone_philo_routine(t_philo *philo)
 {
-	long long	timestamp;
+	pthread_mutex_lock(philo->left_fork);
+	print_action(philo, "has taken a fork");
+	ft_usleep(philo->data->time_to_die);
+	print_action(philo, "died");
+	pthread_mutex_unlock(philo->left_fork);
+	return (NULL);
+}
 
-	timestamp = get_time_in_ms() - philo->data->start_time;
-	pthread_mutex_lock(&philo->data->print_lock);
-	printf("%lld %d %s\n", timestamp, philo->id, msg);
-	pthread_mutex_unlock(&philo->data->print_lock);
+void	set_sim_stop_flag(t_data *data, bool state)
+{
+	pthread_mutex_lock(&data->death_lock);
+	data->someone_died = state;
+	pthread_mutex_unlock(&data->death_lock);
+}
+
+void	think_routine(t_philo *philo, bool silent)
+{
+	time_t  time_to_think;
+
+	pthread_mutex_lock(&philo->data->death_lock);
+	time_to_think = (philo->data->time_to_die
+			- (get_time_in_ms() - philo->last_meal_time)
+			- philo->data->time_to_eat) / 2;
+	pthread_mutex_unlock(&philo->data->death_lock);
+	if (time_to_think < 0)
+		time_to_think = 0;
+	if (time_to_think == 0 && silent == true)
+		time_to_think = 1;
+	if (time_to_think > 600)
+		time_to_think = 200;
+	if (!silent)
+		print_action(philo, "is thinking");
+	ft_usleep(time_to_think);
 }
