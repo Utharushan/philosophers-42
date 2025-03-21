@@ -18,7 +18,8 @@ bool	has_simulation_stopped(t_data *data)
 
 	result = false;
 	pthread_mutex_lock(&data->death_lock);
-	if (data->someone_died || (data->max_meals > 0 && data->full_count >= data->num_philos))
+	if (data->someone_died
+		|| (data->max_meals > 0 && data->full_count >= data->num_philos))
 		result = true;
 	pthread_mutex_unlock(&data->death_lock);
 	return (result);
@@ -39,11 +40,13 @@ bool	end_condition_reached(t_data *data)
 			print_action(&data->philos[i], "died");
 			data->someone_died = 1;
 			pthread_mutex_unlock(&data->death_lock);
+			set_sim_stop_flag(data, true);
 			return (true);
 		}
 		if (data->max_meals > 0 && data->full_count >= data->num_philos)
 		{
 			pthread_mutex_unlock(&data->death_lock);
+			set_sim_stop_flag(data, true);
 			return (true);
 		}
 		pthread_mutex_unlock(&data->death_lock);
@@ -56,7 +59,13 @@ void	*lone_philo_routine(t_philo *philo)
 	pthread_mutex_lock(philo->left_fork);
 	print_action(philo, "has taken a fork");
 	ft_usleep(philo->data->time_to_die);
-	print_action(philo, "died");
+	pthread_mutex_lock(&philo->data->death_lock);
+	if (!philo->data->someone_died)
+	{
+		print_action(philo, "died");
+		philo->data->someone_died = 1;
+	}
+	pthread_mutex_unlock(&philo->data->death_lock);
 	pthread_mutex_unlock(philo->left_fork);
 	return (NULL);
 }
@@ -70,7 +79,7 @@ void	set_sim_stop_flag(t_data *data, bool state)
 
 void	think_routine(t_philo *philo, bool silent)
 {
-	time_t  time_to_think;
+	time_t	time_to_think;
 
 	pthread_mutex_lock(&philo->data->death_lock);
 	time_to_think = (philo->data->time_to_die
