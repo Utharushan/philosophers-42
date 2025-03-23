@@ -95,7 +95,7 @@ void	*grim_reaper(void *arg)
 		if (end_condition_reached(data))
 		{
 			set_sim_stop_flag(data, true);
-			break;
+			break ;
 		}
 		usleep(500);
 	}
