@@ -56,7 +56,7 @@ void	*philosopher_routine(void *arg)
 	{
 		philo_eat(philo);
 		if (has_simulation_stopped(philo->data))
-			break;
+			break ;
 		philo_sleep_think(philo);
 	}
 	return (NULL);
