@@ -28,11 +28,8 @@ void	philo_eat(t_philo *philo)
 		philo->data->full_count++;
 	pthread_mutex_unlock(&philo->data->death_lock);
 	ft_usleep(philo->data->time_to_eat);
-	if (!has_simulation_stopped(philo->data))
-	{
-		pthread_mutex_unlock(philo->left_fork);
-		pthread_mutex_unlock(philo->right_fork);
-	}
+	pthread_mutex_unlock(philo->left_fork);
+	pthread_mutex_unlock(philo->right_fork);
 }
 
 void	philo_sleep_think(t_philo *philo)

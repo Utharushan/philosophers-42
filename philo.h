@@ -68,5 +68,6 @@ bool		end_condition_reached(t_data *data);
 void		*lone_philo_routine(t_philo *philo);
 void		set_sim_stop_flag(t_data *data, bool state);
 void		think_routine(t_philo *philo, bool silent);
+int			ft_strcmp(char *s1, char *s2);
 
 #endif

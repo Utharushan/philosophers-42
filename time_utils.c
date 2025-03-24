@@ -38,3 +38,13 @@ void	print_action(t_philo *philo, char *msg)
 	printf("%lld %d %s\n", timestamp, philo->id, msg);
 	pthread_mutex_unlock(&philo->data->print_lock);
 }
+
+int	ft_strcmp(char *s1, char *s2)
+{
+	int	i;
+
+	i = 0;
+	while (s1[i] && s1[i] == s2[i])
+		i++;
+	return (s1[i] - s2[i]);
+}
