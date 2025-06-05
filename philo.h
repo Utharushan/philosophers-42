@@ -35,18 +35,18 @@ typedef struct s_philo
 
 typedef struct s_data
 {
-	int				num_philos;
-	int				time_to_die;
-	int				time_to_eat;
-	int				time_to_sleep;
-	int				max_meals;
-	int				someone_died;
-	int				full_count;
-	long long		start_time;
-	pthread_mutex_t	death_lock;
-	pthread_mutex_t	print_lock;
-	pthread_mutex_t	*forks;
-	t_philo			*philos;
+    int				num_philos;
+    int				time_to_die;
+    int				time_to_eat;
+    int				time_to_sleep;
+    int				max_meals;
+    int				full_count;
+    long long		start_time;
+    int				stop_simulation;
+    pthread_mutex_t	death_lock;
+    pthread_mutex_t	print_lock;
+    pthread_mutex_t	*forks;
+    t_philo			*philos;
 }	t_data;
 
 // Parsing & Initialization
@@ -62,8 +62,9 @@ void		*grim_reaper(void *arg);
 // Time & Utils
 long long	get_time_in_ms(void);
 void		ft_usleep(int time);
-void		print_action(t_philo *philo, char *msg);
+void		print_action(t_philo *philo, const char *msg);
 bool		has_simulation_stopped(t_data *data);
+void		set_simulation_stopped(t_data *data);
 bool		end_condition_reached(t_data *data);
 void		*lone_philo_routine(t_philo *philo);
 void		set_sim_stop_flag(t_data *data, bool state);

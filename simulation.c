@@ -12,89 +12,93 @@
 
 #include "philo.h"
 
-void	philo_eat(t_philo *philo)
+static void philosopher_eat(t_philo *philo)
 {
-	if (has_simulation_stopped(philo->data))
-		return ;
+	t_data *data = philo->data;
+
+	if (has_simulation_stopped(data))
+		return;
+
 	pthread_mutex_lock(philo->left_fork);
 	print_action(philo, "has taken a fork");
+
 	pthread_mutex_lock(philo->right_fork);
 	print_action(philo, "has taken a fork");
-	print_action(philo, "is eating");
-	pthread_mutex_lock(&philo->data->death_lock);
+
+	pthread_mutex_lock(&data->death_lock);
 	philo->last_meal_time = get_time_in_ms();
 	philo->eat_count++;
-	if (philo->eat_count == philo->data->max_meals)
-		philo->data->full_count++;
-	pthread_mutex_unlock(&philo->data->death_lock);
-	ft_usleep(philo->data->time_to_eat);
+	if (data->max_meals > 0 && philo->eat_count == data->max_meals)
+		data->full_count++;
+	pthread_mutex_unlock(&data->death_lock);
+
+	print_action(philo, "is eating");
+	ft_usleep(data->time_to_eat);
+
 	pthread_mutex_unlock(philo->left_fork);
 	pthread_mutex_unlock(philo->right_fork);
 }
 
-void	philo_sleep_think(t_philo *philo)
+static void philosopher_sleep_and_think(t_philo *philo)
 {
-	if (has_simulation_stopped(philo->data))
-		return ;
+	t_data *data = philo->data;
+
+	if (has_simulation_stopped(data))
+		return;
+
 	print_action(philo, "is sleeping");
-	ft_usleep(philo->data->time_to_sleep);
-	if (has_simulation_stopped(philo->data))
-		return ;
+	ft_usleep(data->time_to_sleep);
+
+	if (has_simulation_stopped(data))
+		return;
+
 	print_action(philo, "is thinking");
 }
 
 void	*philosopher_routine(void *arg)
 {
-	t_philo	*philo;
+	t_philo *philo = (t_philo *)arg;
+	t_data  *data  = philo->data;
 
-	philo = (t_philo *)arg;
-	if (philo->data->num_philos == 1)
-		return (lone_philo_routine(philo));
-	if (philo->id % 2)
-		think_routine(philo, true);
-	while (!has_simulation_stopped(philo->data))
+	if (data->num_philos == 1)
 	{
-		philo_eat(philo);
-		if (has_simulation_stopped(philo->data))
-			break ;
-		philo_sleep_think(philo);
+		pthread_mutex_lock(philo->left_fork);
+		print_action(philo, "has taken a fork");
+		ft_usleep(data->time_to_die);
+		print_action(philo, "died");
+		set_simulation_stopped(data);
+		pthread_mutex_unlock(philo->left_fork);
+		return NULL;
 	}
-	return (NULL);
+
+	if (philo->id % 2 == 1)
+		usleep(100);
+
+	while (!has_simulation_stopped(data))
+	{
+		philosopher_eat(philo);
+		if (has_simulation_stopped(data))
+			break;
+		philosopher_sleep_and_think(philo);
+	}
+	return NULL;
 }
 
-void	start_simulation(t_data *data)
+void *grim_reaper(void *arg)
 {
-	int			i;
-	pthread_t	monitor;
+	t_data *data = (t_data *)arg;
 
-	data->start_time = get_time_in_ms();
-	i = -1;
-	while (++i < data->num_philos)
-		pthread_create(&data->philos[i].thread, NULL,
-			philosopher_routine, &data->philos[i]);
-	pthread_create(&monitor, NULL, grim_reaper, (void *)data);
-	pthread_join(monitor, NULL);
-	i = -1;
-	while (++i < data->num_philos)
-		pthread_join(data->philos[i].thread, NULL);
-}
+	set_simulation_stopped(data); // ensure stop_simulation is 0 at start
+	pthread_mutex_lock(&data->death_lock);
+	data->stop_simulation = 0;
+	pthread_mutex_unlock(&data->death_lock);
 
-void	*grim_reaper(void *arg)
-{
-	t_data	*data;
-
-	data = (t_data *)arg;
-	if (data->max_meals == 0)
-		return (NULL);
-	set_sim_stop_flag(data, false);
 	while (!has_simulation_stopped(data))
 	{
 		if (end_condition_reached(data))
-		{
-			set_sim_stop_flag(data, true);
-			break ;
-		}
+			break;
 		usleep(500);
 	}
-	return (NULL);
+	return NULL;
 }
+
