@@ -5,104 +5,113 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: tuthayak <tuthayak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/03/20 22:49:43 by tuthayak          #+#    #+#             */
-/*   Updated: 2025/03/20 22:49:43 by tuthayak         ###   ########.fr       */
+/*   Created: 2025/06/06 07:56:26 by tuthayak          #+#    #+#             */
+/*   Updated: 2025/06/06 07:56:26 by tuthayak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "philo.h"
 
-bool	has_simulation_stopped(t_data *data)
+int ft_atoi(const char *str)
 {
-	bool	stopped;
+    int i = 0;
+    long res = 0;
+    int sign = 1;
 
-	stopped = false;
-	pthread_mutex_lock(&data->death_lock);
-	if (data->stop_simulation
-		|| (data->max_meals > 0 && data->full_count >= data->num_philos))
-		stopped = true;
-	pthread_mutex_unlock(&data->death_lock);
-	return (stopped);
+    if (!str || !*str)
+        return -1;
+    if (str[i] == '+' || str[i] == '-')
+    {
+        if (str[i] == '-')
+            sign = -1;
+        i++;
+    }
+    while (str[i])
+    {
+        if (str[i] < '0' || str[i] > '9')
+            return -1;
+        res = res * 10 + (str[i] - '0');
+        if (res > 2147483647)
+            return -1;
+        i++;
+    }
+    res *= sign;
+    if (res > 2147483647 || res < -2147483648)
+        return -1;
+    return (int)res;
 }
 
-void	set_simulation_stopped(t_data *data)
+long long get_time(void)
 {
-	pthread_mutex_lock(&data->death_lock);
-	data->stop_simulation = 1;
-	pthread_mutex_unlock(&data->death_lock);
+    struct timeval tv;
+    if (gettimeofday(&tv, NULL) < 0)
+        return -1;
+    return ((long long)tv.tv_sec * 1000LL + (long long)tv.tv_usec / 1000LL);
 }
 
-bool	end_condition_reached(t_data *data)
+void ft_usleep(long long time, t_data *data)
 {
-	int			i;
-	long long	time_since;
-
-	for (i = 0; i < data->num_philos; i++)
-	{
-		pthread_mutex_lock(&data->death_lock);
-		time_since = get_time_in_ms() - data->philos[i].last_meal_time;
-		if (time_since >= data->time_to_die)
-		{
-			print_action(&data->philos[i], "died");
-			data->stop_simulation = 1;
-			pthread_mutex_unlock(&data->death_lock);
-			return (true);
-		}
-		if (data->max_meals > 0 && data->full_count >= data->num_philos)
-		{
-			data->stop_simulation = 1;
-			pthread_mutex_unlock(&data->death_lock);
-			return (true);
-		}
-		pthread_mutex_unlock(&data->death_lock);
-	}
-	return (false);
+    long long start = get_time();
+    while (!(data->died))
+    {
+        if (get_time() - start >= time)
+            break;
+        usleep(500);
+    }
 }
 
-void	*lone_philo_routine(t_philo *philo)
+void print_action(t_data *data, int id, char *message)
 {
-	pthread_mutex_lock(philo->left_fork);
-	if (has_simulation_stopped(philo->data))
-	{
-		pthread_mutex_unlock(philo->left_fork);
-		return (NULL);
-	}
-	print_action(philo, "has taken a fork");
-	ft_usleep(philo->data->time_to_die);
-	pthread_mutex_lock(&philo->data->death_lock);
-	if (!philo->data->stop_simulation)
-	{
-		print_action(philo, "died");
-		philo->data->stop_simulation = 1;
-	}
-	pthread_mutex_unlock(&philo->data->death_lock);
-	pthread_mutex_unlock(philo->left_fork);
-	return (NULL);
-}
+    long long timestamp;
+    char        buf[128];
+    int         len;
+    int         i;
 
-void	set_sim_stop_flag(t_data *data, bool state)
-{
-	pthread_mutex_lock(&data->death_lock);
-	data->stop_simulation = state;
-	pthread_mutex_unlock(&data->death_lock);
-}
-
-void	think_routine(t_philo *philo, bool silent)
-{
-	time_t	time_to_think;
-
-	pthread_mutex_lock(&philo->data->death_lock);
-	time_to_think = (philo->data->time_to_die
-			- (get_time_in_ms() - philo->last_meal_time)
-			- philo->data->time_to_eat) / 2;
-	pthread_mutex_unlock(&philo->data->death_lock);
-	if (time_to_think < 0)
-		time_to_think = 0;
-	if (time_to_think == 0 && silent == true)
-		time_to_think = 1;
-	if (time_to_think > 600)
-		time_to_think = 200;
-	if (!silent && !has_simulation_stopped(philo->data))
-		print_action(philo, "is thinking");
-	ft_usleep(time_to_think);
+    pthread_mutex_lock(&data->print_mutex);
+    timestamp = get_time() - data->start_time;
+    if (!data->died)
+    {
+        len = 0;
+        // timestamp to string
+        long long tmp = timestamp;
+        if (tmp == 0)
+            buf[len++] = '0';
+        else
+        {
+            char rev[32];
+            int idx = 0;
+            while (tmp > 0)
+            {
+                rev[idx++] = (tmp % 10) + '0';
+                tmp /= 10;
+            }
+            while (idx > 0)
+                buf[len++] = rev[--idx];
+        }
+        buf[len++] = ' ';
+        // id to string
+        int idtmp = id;
+        if (idtmp == 0)
+            buf[len++] = '0';
+        else
+        {
+            char rev2[16];
+            int idx2 = 0;
+            while (idtmp > 0)
+            {
+                rev2[idx2++] = (idtmp % 10) + '0';
+                idtmp /= 10;
+            }
+            while (idx2 > 0)
+                buf[len++] = rev2[--idx2];
+        }
+        buf[len++] = ' ';
+        // message
+        i = 0;
+        while (message[i])
+            buf[len++] = message[i++];
+        buf[len++] = '\n';
+        write(1, buf, len);
+    }
+    pthread_mutex_unlock(&data->print_mutex);
 }

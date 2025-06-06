@@ -11,64 +11,49 @@
 /* ************************************************************************** */
 
 #ifndef PHILO_H
-# define PHILO_H
+#define PHILO_H
 
-// Other includes
-# include <pthread.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include <unistd.h>
-# include <sys/time.h>
-# include <stdbool.h>
+#include <pthread.h>
+#include <sys/time.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-// Struct Definitions (Ensure they are properly defined)
-typedef struct s_philo
-{
-	int				id;
-	long long		last_meal_time;
-	int				eat_count;
-	struct s_data	*data;
-	pthread_mutex_t	*left_fork;
-	pthread_mutex_t	*right_fork;
-	pthread_t		thread;
-}	t_philo;
+typedef struct s_data {
+	int             num_philos;
+	long            time_to_die;
+	long            time_to_eat;
+	long            time_to_sleep;
+	int             must_eat;
+	int             all_ate;
+	int             died;
+	int             all_ate_count;
+	long long       start_time;
+	pthread_mutex_t *forks;
+	pthread_mutex_t print_mutex;
+	pthread_mutex_t state_mutex;
+}   t_data;
 
-typedef struct s_data
-{
-    int				num_philos;
-    int				time_to_die;
-    int				time_to_eat;
-    int				time_to_sleep;
-    int				max_meals;
-    int				full_count;
-    long long		start_time;
-    int				stop_simulation;
-    pthread_mutex_t	death_lock;
-    pthread_mutex_t	print_lock;
-    pthread_mutex_t	*forks;
-    t_philo			*philos;
-}	t_data;
+typedef struct s_philo {
+	int             id;
+	int             meals_eaten;
+	long long       last_meal;
+	t_data          *data;
+	pthread_mutex_t *left_fork;
+	pthread_mutex_t *right_fork;
+}   t_philo;
 
-// Parsing & Initialization
-int			parse_arguments(int argc, char **argv, t_data *data);
-int			init_simulation(t_data *data);
-void		cleanup_simulation(t_data *data);
+// utils
+int         ft_atoi(const char *str);
+long long   get_time(void);
+void        ft_usleep(long long time, t_data *data);
+void        print_action(t_data *data, int id, char *message);
 
-// Simulation
-void		*philosopher_routine(void *arg);
-void		start_simulation(t_data *data);
-void		*grim_reaper(void *arg);
+// init and cleanup
+int         init_data(t_data *data, int argc, char **argv);
+void        destroy(t_data *data, t_philo *philos);
 
-// Time & Utils
-long long	get_time_in_ms(void);
-void		ft_usleep(int time);
-void		print_action(t_philo *philo, const char *msg);
-bool		has_simulation_stopped(t_data *data);
-void		set_simulation_stopped(t_data *data);
-bool		end_condition_reached(t_data *data);
-void		*lone_philo_routine(t_philo *philo);
-void		set_sim_stop_flag(t_data *data, bool state);
-void		think_routine(t_philo *philo, bool silent);
-int			ft_strcmp(char *s1, char *s2);
+// routine
+void        *philo_routine(void *arg);
 
 #endif
