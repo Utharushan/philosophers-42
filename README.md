@@ -1,4 +1,5 @@
 # philosophers-42
 
-TODO : - error and not run on some arguments
-       - norme
+TODO :
+- error and not run on some arguments
+- norme
