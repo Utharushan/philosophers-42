@@ -67,31 +67,69 @@ static void	print_death(t_data *data, t_philo *philo)
 	write(1, buf, len);
 }
 
+static int	check_philo_death(t_data *data, t_philo *philo)
+{
+	long long	current_time;
+	long long	last_meal_time;
+	int			philo_died;
+
+	pthread_mutex_lock(&data->state_mutex);
+	if (data->died)
+	{
+		pthread_mutex_unlock(&data->state_mutex);
+		return (0);
+	}
+	current_time = get_time();
+	last_meal_time = philo->last_meal;
+	philo_died = (current_time - last_meal_time > data->time_to_die);
+	if (philo_died)
+		data->died = 1;
+	pthread_mutex_unlock(&data->state_mutex);
+	if (philo_died)
+	{
+		pthread_mutex_lock(&data->print_mutex);
+		print_death(data, philo);
+		pthread_mutex_unlock(&data->print_mutex);
+		return (1);
+	}
+	return (0);
+}
+
+static int	check_all_philos_death(t_data *data, t_philo *philos)
+{
+	int	i;
+
+	i = 0;
+	while (i < data->num_philos)
+	{
+		if (check_philo_death(data, &philos[i]))
+			return (1);
+		i++;
+	}
+	return (0);
+}
+
+static int	simulation_should_end(t_data *data)
+{
+	return (data->died || (data->must_eat > 0 && data->all_ate));
+}
+
 static int	monitor(t_data *data, t_philo *philos)
 {
-	int		i;
+	int	sleep_time;
 
+	sleep_time = 1000;
+	if (data->num_philos > 50)
+		sleep_time = 500;
+	if (data->num_philos > 100)
+		sleep_time = 200;
 	while (1)
 	{
-		i = 0;
-		while (i < data->num_philos)
-		{
-			pthread_mutex_lock(&data->state_mutex);
-			if (!data->died && (get_time() - philos[i].last_meal > data->time_to_die))
-			{
-				data->died = 1;
-				pthread_mutex_unlock(&data->state_mutex);
-				pthread_mutex_lock(&data->print_mutex);
-				print_death(data, &philos[i]);
-				pthread_mutex_unlock(&data->print_mutex);
-				return (1);
-			}
-			pthread_mutex_unlock(&data->state_mutex);
-			i++;
-		}
-		if (data->died || (data->must_eat > 0 && data->all_ate))
-			break;
-		usleep(500); // 500 microseconds for more precise death detection
+		if (check_all_philos_death(data, philos))
+			return (1);
+		if (simulation_should_end(data))
+			break ;
+		usleep(sleep_time);
 	}
 	return (0);
 }
@@ -106,9 +144,8 @@ static void	join_and_cleanup(t_data *data, t_philo *philos, pthread_t *threads)
 		pthread_join(threads[i], NULL);
 		i++;
 	}
-
-destroy(data, philos);
-free(threads);
+	destroy(data, philos);
+	free(threads);
 }
 
 int	main(int argc, char **argv)

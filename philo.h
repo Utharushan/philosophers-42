@@ -6,7 +6,7 @@
 /*   By: tuthayak <tuthayak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/19 11:56:16 by tuthayak          #+#    #+#             */
-/*   Updated: 2025/07/24 22:47:08 by tuthayak         ###   ########.fr       */
+/*   Updated: 2025/07/25 21:46:19 by tuthayak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,30 +21,30 @@
 
 typedef struct s_data
 {
-	int			num_philos;
-	long		time_to_die;
-	long		time_to_eat;
-	long		time_to_sleep;
-	int			must_eat;
-	int			all_ate;
-	int			died;
-	int			all_ate_count;
-	long long	start_time;
+	int				num_philos;
+	long			time_to_die;
+	long			time_to_eat;
+	long			time_to_sleep;
+	int				must_eat;
+	int				all_ate;
+	int				died;
+	int				all_ate_count;
+	long long		start_time;
 	pthread_mutex_t	*forks;
 	pthread_mutex_t	print_mutex;
 	pthread_mutex_t	state_mutex;
-} t_data;
+}	t_data;
 
 typedef struct s_philo
 {
-	int			id;
-	int			meals_eaten;
-	long long	last_meal;
-	t_data		*data;
+	int				id;
+	int				meals_eaten;
+	long long		last_meal;
+	t_data			*data;
 	pthread_mutex_t	*left_fork;
 	pthread_mutex_t	*right_fork;
-	int			done_eating;
-} t_philo;
+	int				done_eating;
+}	t_philo;
 
 int			ft_atoi(const char *str);
 long long	get_time(void);
@@ -55,5 +55,6 @@ void		id_to_str(int id, char *buf, int *len);
 int			init_data(t_data *data, int argc, char **argv);
 void		destroy(t_data *data, t_philo *philos);
 void		*philo_routine(void *arg);
+void		handle_one_philo(t_philo *philo);
 
 #endif

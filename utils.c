@@ -6,7 +6,7 @@
 /*   By: tuthayak <tuthayak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 07:56:26 by tuthayak          #+#    #+#             */
-/*   Updated: 2025/07/25 20:29:45 by tuthayak         ###   ########.fr       */
+/*   Updated: 2025/07/25 21:46:43 by tuthayak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,7 @@ long long	get_time(void)
 void	ft_usleep(long long time, t_data *data)
 {
 	long long	start;
-	int		stop;
+	int			stop;
 
 	start = get_time();
 	stop = 0;
@@ -82,7 +82,10 @@ void	ft_usleep(long long time, t_data *data)
 		pthread_mutex_unlock(&data->state_mutex);
 		if (get_time() - start >= time)
 			break ;
-		usleep(data->num_philos > 100 ? 500 : 100); // Less contention for large N
+		if (data->num_philos > 100)
+			usleep(500);
+		else
+			usleep(100);
 	}
 }
 
