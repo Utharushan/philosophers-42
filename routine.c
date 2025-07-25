@@ -110,8 +110,10 @@ void	*philo_routine(void *arg)
 		handle_one_philo(philo);
 		return (NULL);
 	}
-	if (philo->id % 2 == 0)
-		usleep(100);
+	if (data->num_philos > 100)
+		usleep((philo->id % 10) * 200); // More stagger for large N
+	else
+		usleep((philo->id % data->num_philos) * 100);
 	while (1)
 	{
 		if (should_stop(philo))

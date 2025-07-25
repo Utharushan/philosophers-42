@@ -91,7 +91,7 @@ static int	monitor(t_data *data, t_philo *philos)
 		}
 		if (data->died || (data->must_eat > 0 && data->all_ate))
 			break;
-		usleep(1000);
+		usleep(500); // 500 microseconds for more precise death detection
 	}
 	return (0);
 }
