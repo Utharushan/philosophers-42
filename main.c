@@ -155,7 +155,12 @@ int	main(int argc, char **argv)
 	pthread_t	*threads;
 
 	if (argc < 5 || argc > 6)
+	{
+		write(2, "Error: Invalid number of arguments\n", 36);
+		write(2, "Usage: ./philo number_of_philosophers time_to_die ", 51);
+		write(2, "time_to_eat time_to_sleep [number_of_times_each_philosopher_must_eat]\n", 71);
 		return (1);
+	}
 	if (init_data(&data, argc, argv))
 		return (1);
 	philos = malloc(sizeof(t_philo) * data.num_philos);

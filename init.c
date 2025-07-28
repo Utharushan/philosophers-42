@@ -22,14 +22,34 @@ static int	init_data_values(t_data *data, int argc, char **argv)
 	data->died = 0;
 	data->all_ate = 0;
 	data->all_ate_count = 0;
-	if (data->num_philos <= 0 || data->time_to_die <= 0
-		|| data->time_to_eat <= 0 || data->time_to_sleep <= 0)
+	if (data->num_philos <= 0)
+	{
+		write(2, "Error: Number of philosophers must be a positive integer\n", 58);
 		return (1);
+	}
+	if (data->time_to_die <= 0)
+	{
+		write(2, "Error: Time to die must be a positive integer\n", 47);
+		return (1);
+	}
+	if (data->time_to_eat <= 0)
+	{
+		write(2, "Error: Time to eat must be a positive integer\n", 47);
+		return (1);
+	}
+	if (data->time_to_sleep <= 0)
+	{
+		write(2, "Error: Time to sleep must be a positive integer\n", 49);
+		return (1);
+	}
 	if (argc == 6)
 	{
 		data->must_eat = ft_atoi(argv[5]);
 		if (data->must_eat <= 0)
+		{
+			write(2, "Error: Number of times each philosopher must eat must be a positive integer\n", 77);
 			return (1);
+		}
 	}
 	else
 		data->must_eat = 0;

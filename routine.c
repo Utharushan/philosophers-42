@@ -102,7 +102,7 @@ void	*philo_routine(void *arg)
 		handle_one_philo(philo);
 		return (NULL);
 	}
-	if (data->num_philos > 100)
+	if (data->num_philos >= 100)
 		usleep((philo->id % 10) * 200);
 	else
 		usleep((philo->id % data->num_philos) * 100);
