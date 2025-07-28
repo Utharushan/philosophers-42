@@ -12,7 +12,7 @@
 
 #include "philo.h"
 
-static int	init_philos(t_data *data, t_philo *philos)
+int	init_philos(t_data *data, t_philo *philos)
 {
 	int		i;
 
@@ -31,7 +31,7 @@ static int	init_philos(t_data *data, t_philo *philos)
 	return (0);
 }
 
-static int	create_threads(t_data *data, t_philo *philos, pthread_t *threads)
+int	create_threads(t_data *data, t_philo *philos, pthread_t *threads)
 {
 	int		i;
 
@@ -45,7 +45,7 @@ static int	create_threads(t_data *data, t_philo *philos, pthread_t *threads)
 	return (0);
 }
 
-static void	print_death(t_data *data, t_philo *philo)
+void	print_death(t_data *data, t_philo *philo)
 {
 	char		buf[64];
 	int			len;
@@ -67,7 +67,7 @@ static void	print_death(t_data *data, t_philo *philo)
 	write(1, buf, len);
 }
 
-static int	check_philo_death(t_data *data, t_philo *philo)
+int	check_philo_death(t_data *data, t_philo *philo)
 {
 	long long	current_time;
 	long long	last_meal_time;
@@ -95,7 +95,7 @@ static int	check_philo_death(t_data *data, t_philo *philo)
 	return (0);
 }
 
-static int	check_all_philos_death(t_data *data, t_philo *philos)
+int	check_all_philos_death(t_data *data, t_philo *philos)
 {
 	int	i;
 
@@ -106,73 +106,5 @@ static int	check_all_philos_death(t_data *data, t_philo *philos)
 			return (1);
 		i++;
 	}
-	return (0);
-}
-
-static int	simulation_should_end(t_data *data)
-{
-	return (data->died || (data->must_eat > 0 && data->all_ate));
-}
-
-static int	monitor(t_data *data, t_philo *philos)
-{
-	int	sleep_time;
-
-	sleep_time = 1000;
-	if (data->num_philos > 50)
-		sleep_time = 500;
-	if (data->num_philos > 100)
-		sleep_time = 250;
-	while (1)
-	{
-		if (check_all_philos_death(data, philos))
-			return (1);
-		if (simulation_should_end(data))
-			break ;
-		usleep(sleep_time);
-	}
-	return (0);
-}
-
-static void	join_and_cleanup(t_data *data, t_philo *philos, pthread_t *threads)
-{
-	int		i;
-
-	i = 0;
-	while (i < data->num_philos)
-	{
-		pthread_join(threads[i], NULL);
-		i++;
-	}
-	destroy(data, philos);
-	free(threads);
-}
-
-int	main(int argc, char **argv)
-{
-	t_data		data;
-	t_philo		*philos;
-	pthread_t	*threads;
-
-	if (argc < 5 || argc > 6)
-	{
-		write(2, "Error: Invalid number of arguments\n", 36);
-		write(2, "Usage: ./philo number_of_philosophers time_to_die ", 51);
-		write(2, "time_to_eat time_to_sleep ", 27);
-		write(2, "[number_of_times_each_philosopher_must_eat]\n", 45);
-		return (1);
-	}
-	if (init_data(&data, argc, argv))
-		return (1);
-	philos = malloc(sizeof(t_philo) * data.num_philos);
-	threads = malloc(sizeof(pthread_t) * data.num_philos);
-	if (!philos || !threads)
-		return (1);
-	data.start_time = get_time();
-	init_philos(&data, philos);
-	if (create_threads(&data, philos, threads))
-		return (1);
-	monitor(&data, philos);
-	join_and_cleanup(&data, philos, threads);
 	return (0);
 }

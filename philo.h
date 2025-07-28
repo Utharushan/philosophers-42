@@ -6,7 +6,7 @@
 /*   By: tuthayak <tuthayak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/03/19 11:56:16 by tuthayak          #+#    #+#             */
-/*   Updated: 2025/07/25 21:46:19 by tuthayak         ###   ########.fr       */
+/*   Updated: 2025/07/28 18:35:48 by tuthayak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,5 +56,18 @@ int			init_data(t_data *data, int argc, char **argv);
 void		destroy(t_data *data, t_philo *philos);
 void		*philo_routine(void *arg);
 void		handle_one_philo(t_philo *philo);
+int			init_philos(t_data *data, t_philo *philos);
+int			create_threads(t_data *data, t_philo *philos, pthread_t *threads);
+void		print_death(t_data *data, t_philo *philo);
+int			check_philo_death(t_data *data, t_philo *philo);
+int			check_all_philos_death(t_data *data, t_philo *philos);
+int			simulation_should_end(t_data *data);
+int			monitor(t_data *data, t_philo *philos);
+void		join_and_cleanup(t_data *data, t_philo *philos, pthread_t *threads);
+void		take_forks(t_philo *philo);
+void		eat_and_update(t_philo *philo);
+void		release_forks(t_philo *philo);
+void		sleep_and_think(t_philo *philo);
+int			should_stop(t_philo *philo);
 
 #endif

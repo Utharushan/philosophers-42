@@ -12,10 +12,7 @@
 
 #include "philo.h"
 
-// Declaration for moved function
-void	handle_one_philo(t_philo *philo);
-
-static void	take_forks(t_philo *philo)
+void	take_forks(t_philo *philo)
 {
 	if (philo->id % 2 == 0)
 	{
@@ -33,7 +30,7 @@ static void	take_forks(t_philo *philo)
 	}
 }
 
-static void	eat_and_update(t_philo *philo)
+void	eat_and_update(t_philo *philo)
 {
 	print_action(philo->data, philo->id, "is eating");
 	pthread_mutex_lock(&philo->data->state_mutex);
@@ -51,20 +48,20 @@ static void	eat_and_update(t_philo *philo)
 	ft_usleep(philo->data->time_to_eat, philo->data);
 }
 
-static void	release_forks(t_philo *philo)
+void	release_forks(t_philo *philo)
 {
 	pthread_mutex_unlock(philo->left_fork);
 	pthread_mutex_unlock(philo->right_fork);
 }
 
-static void	sleep_and_think(t_philo *philo)
+void	sleep_and_think(t_philo *philo)
 {
 	print_action(philo->data, philo->id, "is sleeping");
 	ft_usleep(philo->data->time_to_sleep, philo->data);
 	print_action(philo->data, philo->id, "is thinking");
 }
 
-static int	should_stop(t_philo *philo)
+int	should_stop(t_philo *philo)
 {
 	int	stop;
 
@@ -73,37 +70,4 @@ static int	should_stop(t_philo *philo)
 			|| (philo->data->must_eat > 0 && philo->data->all_ate));
 	pthread_mutex_unlock(&philo->data->state_mutex);
 	return (stop);
-}
-
-static void	run_philo_loop(t_philo *philo)
-{
-	while (1)
-	{
-		if (should_stop(philo))
-			break ;
-		take_forks(philo);
-		eat_and_update(philo);
-		release_forks(philo);
-		sleep_and_think(philo);
-		if (should_stop(philo))
-			break ;
-	}
-}
-
-void	*philo_routine(void *arg)
-{
-	t_philo	*philo;
-	t_data	*data;
-
-	philo = (t_philo *)arg;
-	data = philo->data;
-	if (data->num_philos == 1)
-	{
-		handle_one_philo(philo);
-		return (NULL);
-	}
-	if (philo->id % 2 == 0)
-		usleep(1000);
-	run_philo_loop(philo);
-	return (NULL);
 }

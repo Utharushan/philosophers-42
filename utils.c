@@ -6,7 +6,7 @@
 /*   By: tuthayak <tuthayak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 07:56:26 by tuthayak          #+#    #+#             */
-/*   Updated: 2025/07/28 17:02:20 by tuthayak         ###   ########.fr       */
+/*   Updated: 2025/07/28 18:35:48 by tuthayak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,29 +87,4 @@ void	ft_usleep(long long time, t_data *data)
 		else
 			usleep(50);
 	}
-}
-
-void	print_action(t_data *data, int id, char *message)
-{
-	long long	timestamp;
-	char		buf[128];
-	int			len;
-	int			i;
-
-	pthread_mutex_lock(&data->print_mutex);
-	timestamp = get_time() - data->start_time;
-	if (!data->died)
-	{
-		len = 0;
-		timestamp_to_str(timestamp, buf, &len);
-		buf[len++] = ' ';
-		id_to_str(id, buf, &len);
-		buf[len++] = ' ';
-		i = 0;
-		while (message[i])
-			buf[len++] = message[i++];
-		buf[len++] = '\n';
-		write(1, buf, len);
-	}
-	pthread_mutex_unlock(&data->print_mutex);
 }
