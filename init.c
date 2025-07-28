@@ -12,19 +12,12 @@
 
 #include "philo.h"
 
-static int	init_data_values(t_data *data, int argc, char **argv)
+static int	validate_arguments(t_data *data)
 {
-	data->num_philos = ft_atoi(argv[1]);
-	data->time_to_die = ft_atoi(argv[2]);
-	data->time_to_eat = ft_atoi(argv[3]);
-	data->time_to_sleep = ft_atoi(argv[4]);
-	data->must_eat = -1;
-	data->died = 0;
-	data->all_ate = 0;
-	data->all_ate_count = 0;
 	if (data->num_philos <= 0)
 	{
-		write(2, "Error: Number of philosophers must be a positive integer\n", 58);
+		write(2, "Error: Number of philosophers must be a positive integer\n",
+			58);
 		return (1);
 	}
 	if (data->time_to_die <= 0)
@@ -42,12 +35,28 @@ static int	init_data_values(t_data *data, int argc, char **argv)
 		write(2, "Error: Time to sleep must be a positive integer\n", 49);
 		return (1);
 	}
+	return (0);
+}
+
+static int	init_data_values(t_data *data, int argc, char **argv)
+{
+	data->num_philos = ft_atoi(argv[1]);
+	data->time_to_die = ft_atoi(argv[2]);
+	data->time_to_eat = ft_atoi(argv[3]);
+	data->time_to_sleep = ft_atoi(argv[4]);
+	data->must_eat = -1;
+	data->died = 0;
+	data->all_ate = 0;
+	data->all_ate_count = 0;
+	if (validate_arguments(data))
+		return (1);
 	if (argc == 6)
 	{
 		data->must_eat = ft_atoi(argv[5]);
 		if (data->must_eat <= 0)
 		{
-			write(2, "Error: Number of times each philosopher must eat must be a positive integer\n", 77);
+			write(2, "Error: Number of times each philosopher ", 41);
+			write(2, "eat must be a positive integer\n", 32);
 			return (1);
 		}
 	}
