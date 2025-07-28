@@ -70,7 +70,7 @@ static int	should_stop(t_philo *philo)
 
 	pthread_mutex_lock(&philo->data->state_mutex);
 	stop = (philo->data->died
-			|| (philo->data->must_eat && philo->data->all_ate));
+			|| (philo->data->must_eat > 0 && philo->data->all_ate));
 	pthread_mutex_unlock(&philo->data->state_mutex);
 	return (stop);
 }

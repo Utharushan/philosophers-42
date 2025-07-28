@@ -73,13 +73,13 @@ static int	check_philo_death(t_data *data, t_philo *philo)
 	long long	last_meal_time;
 	int			philo_died;
 
+	current_time = get_time();
 	pthread_mutex_lock(&data->state_mutex);
 	if (data->died)
 	{
 		pthread_mutex_unlock(&data->state_mutex);
 		return (0);
 	}
-	current_time = get_time();
 	last_meal_time = philo->last_meal;
 	philo_died = (current_time - last_meal_time > data->time_to_die);
 	if (philo_died)
@@ -118,11 +118,11 @@ static int	monitor(t_data *data, t_philo *philos)
 {
 	int	sleep_time;
 
-	sleep_time = 1000;
+	sleep_time = 500;
 	if (data->num_philos > 50)
-		sleep_time = 500;
-	if (data->num_philos > 100)
 		sleep_time = 200;
+	if (data->num_philos > 100)
+		sleep_time = 100;
 	while (1)
 	{
 		if (check_all_philos_death(data, philos))
