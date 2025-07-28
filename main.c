@@ -158,7 +158,8 @@ int	main(int argc, char **argv)
 	{
 		write(2, "Error: Invalid number of arguments\n", 36);
 		write(2, "Usage: ./philo number_of_philosophers time_to_die ", 51);
-		write(2, "time_to_eat time_to_sleep [number_of_times_each_philosopher_must_eat]\n", 71);
+		write(2, "time_to_eat time_to_sleep ", 27);
+		write(2, "[number_of_times_each_philosopher_must_eat]\n", 45);
 		return (1);
 	}
 	if (init_data(&data, argc, argv))
