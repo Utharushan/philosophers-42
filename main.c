@@ -118,11 +118,11 @@ static int	monitor(t_data *data, t_philo *philos)
 {
 	int	sleep_time;
 
-	sleep_time = 500;
+	sleep_time = 1000;
 	if (data->num_philos > 50)
-		sleep_time = 200;
+		sleep_time = 500;
 	if (data->num_philos > 100)
-		sleep_time = 100;
+		sleep_time = 250;
 	while (1)
 	{
 		if (check_all_philos_death(data, philos))

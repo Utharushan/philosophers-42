@@ -35,6 +35,7 @@ static void	take_forks(t_philo *philo)
 
 static void	eat_and_update(t_philo *philo)
 {
+	print_action(philo->data, philo->id, "is eating");
 	pthread_mutex_lock(&philo->data->state_mutex);
 	philo->last_meal = get_time();
 	philo->meals_eaten++;
@@ -47,7 +48,6 @@ static void	eat_and_update(t_philo *philo)
 	if (philo->data->all_ate_count == philo->data->num_philos)
 		philo->data->all_ate = 1;
 	pthread_mutex_unlock(&philo->data->state_mutex);
-	print_action(philo->data, philo->id, "is eating");
 	ft_usleep(philo->data->time_to_eat, philo->data);
 }
 
@@ -102,10 +102,8 @@ void	*philo_routine(void *arg)
 		handle_one_philo(philo);
 		return (NULL);
 	}
-	if (data->num_philos >= 100)
-		usleep((philo->id % 10) * 200);
-	else
-		usleep((philo->id % data->num_philos) * 100);
+	if (philo->id % 2 == 0)
+		usleep(1000);
 	run_philo_loop(philo);
 	return (NULL);
 }

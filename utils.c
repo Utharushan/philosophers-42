@@ -6,7 +6,7 @@
 /*   By: tuthayak <tuthayak@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/06/06 07:56:26 by tuthayak          #+#    #+#             */
-/*   Updated: 2025/07/28 15:17:20 by tuthayak         ###   ########.fr       */
+/*   Updated: 2025/07/28 17:02:20 by tuthayak         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,9 +83,9 @@ void	ft_usleep(long long time, t_data *data)
 		if (get_time() - start >= time)
 			break ;
 		if (data->num_philos >= 100)
-			usleep(500);
+			usleep(200);
 		else
-			usleep(100);
+			usleep(50);
 	}
 }
 
